@@ -1,0 +1,305 @@
+---
+geometry: margin= 1in
+title: "Clustering Analysis On Wholesale Customers Data"
+author: "Yasaman Panjebandpour"
+date: "`r Sys.Date()`"
+output: pdf_document
+  
+  
+ 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.width = 6.5, fig.height = 3.3, fig.align = 'center')
+options(scipen = 1, digits = 4)
+```
+
+## Abstract
+
+
+In this study, we'll create clusters of customers based on their annual money spent. This will give us a new insight. Being able to group our customers based on their annual money spent will allow us to see the profitability of each customer group and deliver more profitable marketing campaigns or create tailored discounts. Firstly, hierarchical clustering with all three linkage methods including simple, complete and average linkage is performed which complete linkage dendogram was more balanced. Obviously number of clusters changed each time we change the algorithm. Everytime we perform a plot to visualize the clusters on the raw data. Also, we compare methods to each other on a table. Moreover, we performed non-hierarchical clustering only through K-means which is a popular method. We used elbow method to get an initial number of centers in K-means method and we ended up with 6 clusters. At the end we saw the performance of both hclustering with complete method and K-means in a table. In addition to this, we used statistical model based clustering analysis. The model fitted was diagonal, varying volume and shape with all its estimated parameters and it gave us 8 as a number of clusters.
+
+## Introduction
+
+
+Customers segmentation is a prerequisite for formulating marketing strategies. This document demonstrates exploratory data analysis using hierarchical and non-hierarchical clustering and its associated visualization techniques on wholesale customers data set, with highlights on the effects of feature removing outliers on clustering outcomes.
+In this project, we will analyze a dataset containing data on various customers' annual spending amounts (reported in monetary units) of diverse product categories for internal structure. One goal of this project is to best describe the variation in the different types of customers that a wholesale distributor interacts with. Doing so would equip the distributor with insight into how to best structure their delivery service to meet the needs of each customer. We will perform hclustering with differebt methods as mentioned below:
+
+1: Single Linkage
+
+Firstly, we find the smallest distance in $\mathbf{D}=\{d_{ik}\}$
+and merge corresponding objects to get cluster $(UV)$.  
+
+Secondly,the general distances between $(UV)$ and any other cluster
+$W$ are computed by
+\[
+d_{(UV)W}=\min\{d_{UW},d_{VW}\}
+\]
+where $d_{UW}$and $d_{VW}$ are distances between the nearest neighbors
+of clusters $U$ and $V$ and clusters $V$ and $W$, respectively. 
+
+
+2: Compelte Linkage:
+
+\[
+d_{(UV)W}^{*}=\max\{d_{UV},d_{VW}\}
+\]
+
+3: Average Linkage:
+
+\[
+d_{(UV)W}=\frac{\sum_{i}\sum_{k}d_{ik}}{N_{(UV)}N_{W}}
+\]
+
+
+Next step, we will perform K- means as non-hierachical analysis and mixure models for statistical model based clustering.
+
+
+## Wholesale Customers Data Set:
+
+
+The wholesale customers data is available on the UCI Machine Learning Repository. The data set was published by Margarida G. M. S. Cardoso in 2014. It contains 440 observations and 8 variables: Channel (Horeca (Hotel/Restaurant/Café) or Retail), Region (Lisbon, Oporto or Other), and 6 Product Categories - Fresh, Milk, Grocery, Frozen, Detergents_Paper, Delicassen (with values of annual spending)
+
+Attribute Information:
+
+1)FRESH: annual spending (m.u.) on fresh products (Continuous)
+
+2)MILK: annual spending (m.u.) on milk products (Continuous)
+
+3)GROCERY: annual spending (m.u.)on grocery products (Continuous)
+
+4)FROZEN: annual spending (m.u.)on frozen products (Continuous)
+
+5)DETERGENTS_PAPER: annual spending (m.u.) on detergents and paper products (Continuous)
+
+6)DELICATESSEN: annual spending (m.u.)on and delicatessen products (Continuous)
+
+7)CHANNEL: customersale Channel - Horeca (Hotel/Restaurant/Cafe) or Retail channel (Nominal)
+
+8)REGION: customersale Region - Lisnon, Oporto or Other (Nominal)
+
+
+## Statistical Analysis:
+
+
+First, we need to see the structure of the data set and a brief summary of all attributes (see Table 1):
+
+```{r ,include=FALSE}
+customer.data <- read.csv("Wholesale customers data.csv", sep = ",", header = TRUE)
+customer.data
+#install.packages("printr")
+library(printr)
+```
+
+
+```{r}
+devtools::install_github("adletaw/captioner")
+library(captioner)
+table_nums <- captioner(prefix = "Table")
+head(customer.data)
+table_nums(name = "1", caption = "Wholesale Customer Data")
+summary(customer.data )
+table_nums(name = "2", caption = "Wholesale Customer Summary")
+plot(customer.data)
+title(xlab= "Figure 1")
+```
+
+
+
+
+There’s obviously a big difference for the top customers in each category here for example, Fresh goes from a min of 3 to a max of 112,151. Normalizing / scaling the data won’t necessarily remove those outliers.We could also remove those customers completely. From a business perspective, you don’t really need a clustering algorithm to identify what your top customers are buying. You usually need clustering and segmentation for your middle 50%.We try removing the top 5 customers from each category.
+
+
+```{r , eval=FALSE}
+order(customer.data$Fresh, decreasing = TRUE)#182 126 285  40 259
+
+order(customer.data$Milk, decreasing = TRUE)# 87  48  86 184  62
+
+order(customer.data$Grocery, decreasing = TRUE)#86 334  62  48  66
+
+order(customer.data$Frozen, decreasing = TRUE)#326,184,94,197,104
+
+order(customer.data$Detergents_Paper, decreasing = TRUE)#86,334,62,66,48
+
+order(customer.data$Delicassen, decreasing = TRUE)#184 ,24 ,72 ,88 ,182
+```
+```{r}
+customer.data.new <- customer.data[-c(182,126,285,40,259,87,48,86,184,62,334,66,326,94,197,104,24,72,88),]
+```
+
+
+Aftering removing top five values for each variable, then we calcualte an Euclidean distance matrix to use it for hirechical clustering with all methods.
+
+
+
+```{r }
+data.dist <- dist(customer.data.new[,-c(1,2)],method = "euclidean")
+# method = "single" for single linkage
+data.hc.s <- hclust(data.dist, method="single")
+t = table(cutree(data.hc.s, k = 2))
+
+```
+
+
+
+By single linkage we could get two clusters and we visulize it with dendogram which is not good enough to see all clusters (see Figure 2):
+
+```{r}
+hcd.1 <- as.dendrogram(data.hc.s, hang = -1)
+plot(hcd.1, xlab = "Figure 2 Single Linkage")
+```
+
+
+
+Since we got two clusters. we tried to creat a table to see the predicted clusters versus Channel since it has two levels ( see Table 2):
+
+```{r}
+
+
+table(predicted = cutree(data.hc.s, k = 2), actual = customer.data.new[,1])
+table_nums(name = "3", caption = "Predicted vs Actual.")
+```
+
+
+As we see from the table, two of them are misclassified.
+
+Here, we prepare two graphs(see Figure 3 and 4), one containing clusters obtained from single linkage on the actual data and the other containg information about the clusters versus Channel:
+
+
+
+```{r}
+pairs(customer.data[,-2], 
+      col = cutree(data.hc.s, k = 2), 
+      pch = 16)
+title(xlab = "Figure 3")
+pairs(customer.data[,-c(1,2)], pch = unclass(customer.data[,1]), 
+      col = cutree(data.hc.s, k = 2))
+title(xlab = "Figure 4")
+
+```
+
+
+
+ We do the same procedure for complete linkage and average linkage:
+ 
+```{r}
+data.hc.c <- hclust(data.dist, method="complete")
+
+#table(cutree(data.hc.c, k = 2))
+#table(cutree(data.hc.c, k = 3))
+
+hcd.2 <- as.dendrogram(data.hc.c, hang = -1)
+plot(hcd.2, xlab  = "Figure 5  Complete Linkage")
+
+table(predicted = cutree(data.hc.c, k = 3), actual = customer.data.new[,2])
+table_nums("4", caption = "Predicted vs Actual")
+rect.hclust(data.hc.c, k = 4, border = "red")
+
+pairs(customer.data[,-2], 
+      col = cutree(data.hc.c, k = 2), 
+      pch = 16)
+title(xlab = "Figure 6")
+
+pairs(customer.data[,-c(1,2)], pch = unclass(customer.data[,2]), 
+      col = cutree(data.hc.c, k = 3))
+title(xlab = "Figure 7")
+
+
+data.hc.a <- hclust(data.dist, method="average")
+
+
+hcd.3 <- as.dendrogram(data.hc.a, hang = -1)
+plot(hcd.3, xlab = "Figure 8  Average Linakge")
+
+#table(cutree(data.hc.a, k = 2))
+#table(cutree(data.hc.a, k = 3))
+
+table(predicted = cutree(data.hc.c, k = 3), actual = customer.data.new[,2])
+table_nums("5", caption = "Predicted vs Actual")
+rect.hclust(data.hc.a, k = 3, border = "blue")
+```
+
+
+
+In both methods, complete and average linkage, 3 clusters obtaind but the clusters in complete linkage are more balanced.
+
+After analyzing data with hirerichical clustering, we need to discuss about non-hirerichical clustering uch as K-means method. But we need to know how many centers or partitions we need initially. For this, we use elbow method. By looking at the elbow (See Figure 9), we think that five centers will be good to start the analysis. We perform K-means with five centers and plot the clusters on actual data (See Figure 10). Point symbol is natural classes and point color is cluster solution.
+
+```{r}
+ set.seed(123)
+
+ k.max <- 15
+ which.k <- sapply(1:k.max, 
+               function(k){kmeans(scale(customer.data.new), k, nstart=25,iter.max = 15 )$betweenss/kmeans(scale(customer.data.new), k, nstart=25,iter.max = 15 )$totss})
+
+ plot(1:k.max, which.k,
+      type="b", pch = 19, frame = FALSE, 
+      xlab=" Figure 9  Number of clusters K",
+      ylab="Total Between-clusters sum of squares")
+```
+
+
+
+```{r}
+fit1 <- kmeans(customer.data.new[,-c(1,2)],centers = 5, nstart = 20)
+plot(customer.data.new[,-c(1,2)], pch = c(15,17,18,20,11), col = fit1$cluster, cex = 0.7)
+title(xlab = "Figure 10")
+ fit1$centers
+ fit1$size
+```
+
+
+
+
+Cluster 1 looks to be a heavy Grocery and above average Detergents_Paper but low Fresh foods. Cluster 3 is dominant in the Fresh category. Cluster 5 might be either the “junk drawer” catch-all cluster or it might represent the small customers.
+
+To compare K-means result and hclustering with complete method we prepare a table as below:
+
+```{r}
+table(kmeans1 = fit1$cluster, 
+       hclust = cutree(data.hc.c, k = 3))
+table_nums(name = "6", caption = "K-means vs Hierarchical Clustering")
+```
+
+
+
+Finally, we want to perform model based clustering. We perform this analysis with mclust package in R:
+
+```{r}
+if (!require(mclust)) install.packages('mclust')
+library(mclust) 
+fit2 <- Mclust(customer.data.new[,-c(1,2)]) 
+summary(fit2)
+```
+
+
+
+We figured out with model based clustering that 8 clusters are the best number of clusters and the model(VVI) diagonal, varying volume and shape is obtained and all the parameters inclusing probabilities and means and variances are estimated. Then we plot the clusters from the mclust on actual data. Also we plot the BIC of this model to see best choice of the number of clusters and best covariance structure (See Figure 12):
+
+```{r}
+plot(customer.data.new[,-c(1,2)], pch = fit2$classification, 
+      col = fit2$classification,
+      cex = 0.7)
+title(xlab = "Figure 11 Model-based Clustering")
+ 
+plot(fit2, what = "BIC", cex = 0.3, xlab = "Figure 12    Number Of Clusters")
+
+plot(fit2, what = "classification", cex = 0.5)
+title(xlab =  "Figure 13")
+```
+
+
+
+## Results:
+
+
+
+
+
+## Conclusion:
+
+Sometimes, we have a group of observations and we need to split it into a number of subsets of similar observations. Cluster analysis is a group of techniques that will help us to discover these similarities between observations.
+
+Market segmentation is an example of cluster analysis. We can use cluster analysis when we have a lot of customers and we want to divide them into different market segments, but we don't know how to create these segments.
+
+Sometimes, especially with a large amount of customers, we need some help to understand our data. Clustering can help us to create different customer groups based on their buying behavior.Marketers need to know identify customers  of high-profit , low risk. In ths study three different method of clustering have been applied and each one with different algorithm gave us varoius number of clusters. Regarding the speed and accuracy of K-means compared to hclustering, the number of clustres gained from k-means can be a good segmentation. Meaning that those customers in one clusters are the ones with close and similar money purchased in all different kinds of products.
