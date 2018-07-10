@@ -58,7 +58,7 @@ Next step, we will perform K- means as non-hierachical analysis and mixure model
 ## Wholesale Customers Data Set:
 
 
-The wholesale customers data is available on the UCI Machine Learning Repository. The data set was published by Margarida G. M. S. Cardoso in 2014. It contains 440 observations and 8 variables: Channel (Horeca (Hotel/Restaurant/CafÈ) or Retail), Region (Lisbon, Oporto or Other), and 6 Product Categories - Fresh, Milk, Grocery, Frozen, Detergents_Paper, Delicassen (with values of annual spending)
+The wholesale customers data is available on the UCI Machine Learning Repository. The data set was published by Margarida G. M. S. Cardoso in 2014. It contains 440 observations and 8 variables: Channel (Horeca (Hotel/Restaurant/Caf√©) or Retail), Region (Lisbon, Oporto or Other), and 6 Product Categories - Fresh, Milk, Grocery, Frozen, Detergents_Paper, Delicassen (with values of annual spending)
 
 Attribute Information:
 
@@ -107,7 +107,7 @@ title(xlab= "Figure 1")
 
 
 
-Thereís obviously a big difference for the top customers in each category here for example, Fresh goes from a min of 3 to a max of 112,151. Normalizing / scaling the data wonít necessarily remove those outliers.We could also remove those customers completely. From a business perspective, you donít really need a clustering algorithm to identify what your top customers are buying. You usually need clustering and segmentation for your middle 50%.We try removing the top 5 customers from each category.
+There‚Äôs obviously a big difference for the top customers in each category here for example, Fresh goes from a min of 3 to a max of 112,151. Normalizing / scaling the data won‚Äôt necessarily remove those outliers.We could also remove those customers completely. From a business perspective, you don‚Äôt really need a clustering algorithm to identify what your top customers are buying. You usually need clustering and segmentation for your middle 50%.We try removing the top 5 customers from each category.
 
 
 ```{r , eval=FALSE}
@@ -251,7 +251,7 @@ title(xlab = "Figure 10")
 
 
 
-Cluster 1 looks to be a heavy Grocery and above average Detergents_Paper but low Fresh foods. Cluster 3 is dominant in the Fresh category. Cluster 5 might be either the ìjunk drawerî catch-all cluster or it might represent the small customers.
+Cluster 1 looks to be a heavy Grocery and above average Detergents_Paper but low Fresh foods. Cluster 3 is dominant in the Fresh category. Cluster 5 might be either the ‚Äújunk drawer‚Äù catch-all cluster or it might represent the small customers.
 
 To compare K-means result and hclustering with complete method we prepare a table as below:
 
